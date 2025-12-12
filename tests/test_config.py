@@ -17,31 +17,31 @@ class TestResolveSecret:
         secret_file.write_text("file-content")
 
         # Even if file exists, inline mode returns literal
-        assert resolve_secret(str(secret_file), SecretsMode.inline) == str(secret_file)
-        assert resolve_secret("literal-value", SecretsMode.inline) == "literal-value"
+        assert resolve_secret(str(secret_file), SecretsMode.INLINE) == str(secret_file)
+        assert resolve_secret("literal-value", SecretsMode.INLINE) == "literal-value"
 
     def test_files_mode_reads_file(self, tmp_path: Path) -> None:
         """Files mode always reads from file."""
         secret_file = tmp_path / "secret"
         secret_file.write_text("file-content\n")
 
-        assert resolve_secret(str(secret_file), SecretsMode.files) == "file-content"
+        assert resolve_secret(str(secret_file), SecretsMode.FILES) == "file-content"
 
     def test_files_mode_raises_on_missing(self, tmp_path: Path) -> None:
         """Files mode raises error if file doesn't exist."""
         with pytest.raises(FileNotFoundError):
-            resolve_secret("/nonexistent/path", SecretsMode.files)
+            resolve_secret("/nonexistent/path", SecretsMode.FILES)
 
     def test_auto_mode_reads_existing_file(self, tmp_path: Path) -> None:
         """Auto mode reads from file if it exists."""
         secret_file = tmp_path / "secret"
         secret_file.write_text("file-content\n")
 
-        assert resolve_secret(str(secret_file), SecretsMode.auto) == "file-content"
+        assert resolve_secret(str(secret_file), SecretsMode.AUTO) == "file-content"
 
     def test_auto_mode_returns_literal_if_no_file(self) -> None:
         """Auto mode returns literal if file doesn't exist."""
-        assert resolve_secret("my-passphrase", SecretsMode.auto) == "my-passphrase"
+        assert resolve_secret("my-passphrase", SecretsMode.AUTO) == "my-passphrase"
 
     def test_auto_mode_expands_tilde(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Auto mode expands ~ in paths."""
@@ -49,7 +49,7 @@ class TestResolveSecret:
         secret_file = tmp_path / "secret"
         secret_file.write_text("home-secret\n")
 
-        assert resolve_secret("~/secret", SecretsMode.auto) == "home-secret"
+        assert resolve_secret("~/secret", SecretsMode.AUTO) == "home-secret"
 
 
 class TestDataset:
@@ -71,7 +71,7 @@ class TestDataset:
     def test_get_passphrase_inline(self) -> None:
         """Test getting passphrase in inline mode."""
         ds = Dataset(path="tank/photos", secret="my-secret")
-        assert ds.get_passphrase(SecretsMode.inline) == "my-secret"
+        assert ds.get_passphrase(SecretsMode.INLINE) == "my-secret"
 
     def test_get_passphrase_from_file(self, tmp_path: Path) -> None:
         """Test getting passphrase from file."""
@@ -79,7 +79,7 @@ class TestDataset:
         key_file.write_text("file-passphrase\n")
 
         ds = Dataset(path="tank/photos", secret=str(key_file))
-        assert ds.get_passphrase(SecretsMode.files) == "file-passphrase"
+        assert ds.get_passphrase(SecretsMode.FILES) == "file-passphrase"
 
 
 class TestConfig:
@@ -101,7 +101,7 @@ class TestConfig:
         config = Config.from_yaml(config_file)
 
         assert config.host == "192.168.1.1:443"
-        assert config.secrets == SecretsMode.inline
+        assert config.secrets == SecretsMode.INLINE
         assert config.get_api_key() == "my-api-key"
         assert len(config.datasets) == 1
         assert config.datasets[0].get_passphrase(config.secrets) == "my-passphrase"
@@ -148,7 +148,7 @@ class TestConfig:
 
         config = Config.from_yaml(config_file)
 
-        assert config.secrets == SecretsMode.auto
+        assert config.secrets == SecretsMode.AUTO
         assert config.get_api_key() == "file-api-key"  # file exists
         assert config.datasets[0].get_passphrase(config.secrets) == "literal-passphrase"  # no file
 

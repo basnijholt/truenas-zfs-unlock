@@ -41,19 +41,19 @@ datasets:
 class SecretsMode(str, Enum):
     """How to interpret secret values."""
 
-    auto = "auto"  # check if file exists, otherwise use as literal
-    files = "files"  # always treat as file paths
-    inline = "inline"  # always treat as literal values
+    AUTO = "auto"  # check if file exists, otherwise use as literal
+    FILES = "files"  # always treat as file paths
+    INLINE = "inline"  # always treat as literal values
 
 
 def resolve_secret(value: str, mode: SecretsMode) -> str:
     """Resolve a secret value based on the secrets mode."""
-    if mode == SecretsMode.inline:
+    if mode == SecretsMode.INLINE:
         return value
 
     path = Path(value).expanduser()
 
-    if mode == SecretsMode.files:
+    if mode == SecretsMode.FILES:
         return path.read_text().strip()
 
     # auto mode: check if file exists
@@ -86,7 +86,7 @@ class Config(BaseModel):
     host: str
     api_key: str  # file path or literal value
     skip_cert_verify: bool = False
-    secrets: SecretsMode = SecretsMode.auto
+    secrets: SecretsMode = SecretsMode.AUTO
     datasets: list[Dataset]
 
     def get_api_key(self) -> str:
