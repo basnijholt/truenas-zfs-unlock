@@ -260,7 +260,7 @@ app = typer.Typer(
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 
-service_app = typer.Typer(help="Manage system service")
+service_app = typer.Typer(help="Manage system service", no_args_is_help=True)
 app.add_typer(service_app, name="service")
 
 

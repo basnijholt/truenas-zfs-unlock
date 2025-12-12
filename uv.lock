@@ -665,7 +665,6 @@ wheels = [
 
 [[package]]
 name = "truenas-unlock"
-version = "3.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
