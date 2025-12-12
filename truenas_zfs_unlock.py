@@ -134,9 +134,7 @@ class TrueNasClient:
                 "recursive": False,
                 "force": True,
                 "toggle_attachments": True,
-                "datasets": [
-                    {"name": dataset.path, "passphrase": dataset.get_passphrase()}
-                ],
+                "datasets": [{"name": dataset.path, "passphrase": dataset.get_passphrase()}],
             },
         }
 
@@ -187,18 +185,10 @@ app = typer.Typer(
 
 @app.command()
 def main(
-    config_path: Annotated[
-        Path | None, typer.Option("--config", "-c", help="Config file path")
-    ] = None,
-    dry_run: Annotated[
-        bool, typer.Option("--dry-run", "-n", help="Show what would be done")
-    ] = False,
-    daemon: Annotated[
-        bool, typer.Option("--daemon", "-d", help="Run continuously")
-    ] = False,
-    interval: Annotated[
-        int, typer.Option("--interval", "-i", help="Seconds between runs")
-    ] = 10,
+    config_path: Annotated[Path | None, typer.Option("--config", "-c", help="Config file path")] = None,
+    dry_run: Annotated[bool, typer.Option("--dry-run", "-n", help="Show what would be done")] = False,
+    daemon: Annotated[bool, typer.Option("--daemon", "-d", help="Run continuously")] = False,
+    interval: Annotated[int, typer.Option("--interval", "-i", help="Seconds between runs")] = 10,
 ) -> None:
     """Unlock encrypted ZFS datasets on TrueNAS."""
     if config_path is None:
