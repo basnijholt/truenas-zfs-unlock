@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/truenas-unlock)](https://pypi.org/project/truenas-unlock/)
 [![Python](https://img.shields.io/pypi/pyversions/truenas-unlock)](https://pypi.org/project/truenas-unlock/)
-[![Tests](https://github.com/basnijholt/truenas-unlock/actions/workflows/test.yml/badge.svg)](https://github.com/basnijholt/truenas-unlock/actions/workflows/test.yml)
+[![Tests](https://github.com/basnijholt/truenas-unlock/actions/workflows/pytest.yml/badge.svg)](https://github.com/basnijholt/truenas-unlock/actions/workflows/pytest.yml)
 [![License](https://img.shields.io/github/license/basnijholt/truenas-unlock)](LICENSE)
 
 Unlock encrypted ZFS datasets on TrueNAS via the API.

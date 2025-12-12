@@ -26,6 +26,6 @@ jobs:
       - name: Format check
         run: uv run ruff format --check .
       - name: Type check
-        run: uv run mypy truenas_zfs_unlock.py
+        run: uv run mypy truenas_unlock.py
       - name: Test
-        run: uv run pytest --cov=truenas_zfs_unlock --cov-report=term-missing
+        run: uv run pytest --cov=truenas_unlock --cov-report=term-missing
