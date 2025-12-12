@@ -1,3 +1,12 @@
+# TrueNAS Unlock
+
+[![PyPI](https://img.shields.io/pypi/v/truenas-unlock)](https://pypi.org/project/truenas-unlock/)
+[![Python](https://img.shields.io/pypi/pyversions/truenas-unlock)](https://pypi.org/project/truenas-unlock/)
+[![Tests](https://github.com/basnijholt/truenas-unlock/actions/workflows/test.yml/badge.svg)](https://github.com/basnijholt/truenas-unlock/actions/workflows/test.yml)
+[![License](https://img.shields.io/github/license/basnijholt/truenas-unlock)](LICENSE)
+
+Unlock encrypted ZFS datasets on TrueNAS via the API.
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -12,15 +21,6 @@
   - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# TrueNAS Unlock
-
-[![PyPI](https://img.shields.io/pypi/v/truenas-unlock)](https://pypi.org/project/truenas-unlock/)
-[![Python](https://img.shields.io/pypi/pyversions/truenas-unlock)](https://pypi.org/project/truenas-unlock/)
-[![Tests](https://github.com/basnijholt/truenas-unlock/actions/workflows/test.yml/badge.svg)](https://github.com/basnijholt/truenas-unlock/actions/workflows/test.yml)
-[![License](https://img.shields.io/github/license/basnijholt/truenas-unlock)](LICENSE)
-
-Unlock encrypted ZFS datasets on TrueNAS via the API.
 
 ## Install
 
