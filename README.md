@@ -76,6 +76,88 @@ truenas-zfs-unlock --help
 
 
 
+## Running as a Service
+
+### Linux (systemd)
+
+Create a user service at `~/.config/systemd/user/truenas-zfs-unlock.service`:
+
+```ini
+[Unit]
+Description=TrueNAS ZFS Unlock
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=%h/.local/bin/truenas-zfs-unlock --daemon
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+```
+
+Enable and start:
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now truenas-zfs-unlock
+systemctl --user status truenas-zfs-unlock
+
+# View logs
+journalctl --user -u truenas-zfs-unlock -f
+```
+
+To run at boot (even without login):
+
+```bash
+sudo loginctl enable-linger $USER
+```
+
+### macOS (launchd)
+
+Create a launch agent at `~/Library/LaunchAgents/com.truenas-zfs-unlock.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.truenas-zfs-unlock</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/YOUR_USERNAME/.local/bin/truenas-zfs-unlock</string>
+        <string>--daemon</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/truenas-zfs-unlock.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/truenas-zfs-unlock.err</string>
+</dict>
+</plist>
+```
+
+Load and start:
+
+```bash
+# Replace YOUR_USERNAME in the plist first, then:
+launchctl load ~/Library/LaunchAgents/com.truenas-zfs-unlock.plist
+
+# Check status
+launchctl list | grep truenas
+
+# View logs
+tail -f /tmp/truenas-zfs-unlock.log
+
+# Stop/unload
+launchctl unload ~/Library/LaunchAgents/com.truenas-zfs-unlock.plist
+```
+
 ## Development
 
 ```bash
