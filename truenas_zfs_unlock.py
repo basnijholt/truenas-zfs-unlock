@@ -129,7 +129,7 @@ class TrueNasClient:
         url = f"{self._base_url}/pool/dataset/unlock"
         payload = {
             "id": dataset.path,
-            "unlock_options": {
+            "options": {
                 "key_file": False,
                 "recursive": False,
                 "force": True,
