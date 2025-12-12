@@ -1,0 +1,13 @@
+# TrueNAS ZFS Unlock Configuration
+# Copy to ~/.config/truenas-unlock/config.yaml
+
+host: 192.168.1.214:443
+api_key_file: ~/.secrets/truenas-api-key
+skip_cert_verify: true
+
+datasets:
+  tank/syncthing: ~/.secrets/syncthing-key
+  tank/frigate: ~/.secrets/frigate-key
+  tank/photos: ~/.secrets/photos-key
+  tank/photos_export: ~/.secrets/photos-export-key
+  tank/stash: ~/.secrets/stash-key
