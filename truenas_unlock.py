@@ -48,6 +48,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
+Environment="PATH={path}"
 ExecStart={uv_path} tool run truenas-unlock --daemon
 Restart=on-failure
 RestartSec=10
@@ -331,7 +332,9 @@ def _install_linux(uv_path: Path) -> None:
 
     service_dir.mkdir(parents=True, exist_ok=True)
 
-    content = SYSTEMD_SERVICE.format(uv_path=uv_path)
+    # Pass current PATH to service (needed for NixOS and other non-standard setups)
+    current_path = os.environ.get("PATH", "/usr/bin:/bin")
+    content = SYSTEMD_SERVICE.format(uv_path=uv_path, path=current_path)
     service_dst.write_text(content)
 
     _run(["systemctl", "--user", "daemon-reload"])
