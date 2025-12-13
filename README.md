@@ -145,7 +145,7 @@ uv run mypy truenas_unlock.py
 
 ## Credits
 
-Inspired by [ThorpeJosh/truenas-unlock](https://github.com/ThorpeJosh/truenas-unlock).
+Inspired by [ThorpeJosh/truenas-zfs-unlock](https://github.com/ThorpeJosh/truenas-zfs-unlock).
 
 ## License
 
