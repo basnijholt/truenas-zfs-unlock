@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from truenas_unlock import Config, Dataset, SecretsMode, run_unlock
+from truenas_unlock import Config, Dataset, run_unlock
 
 
 @pytest.fixture
@@ -23,9 +23,8 @@ def mock_config() -> Config:
 
 @pytest.mark.anyio
 async def test_integration_run_unlock_success(mock_config: Config) -> None:
-    """
-    Test that run_unlock returns True when all datasets are successfully checked/unlocked.
-    
+    """Test that run_unlock returns True when all datasets are successfully checked/unlocked.
+
     Scenario:
     - tank/secure is LOCKED -> Unlocked successfully.
     - tank/media is UNLOCKED -> Skipped.
@@ -46,9 +45,9 @@ async def test_integration_run_unlock_success(mock_config: Config) -> None:
     # 1. GET is_locked(tank/secure) -> True
     # 2. POST unlock(tank/secure) -> Success
     # 3. GET is_locked(tank/media) -> False
-    
+
     # We'll use a side_effect function to return the right response based on URL/method
-    async def request_handler(method, url, **kwargs):
+    async def request_handler(method: str, url: str, **kwargs: object) -> MagicMock:  # noqa: ARG001
         if "tank/secure" in url and method == "GET":
             return mock_response_locked
         if "unlock" in url and method == "POST":
@@ -64,34 +63,50 @@ async def test_integration_run_unlock_success(mock_config: Config) -> None:
         mock_client.__aenter__.return_value = mock_client
 
         result = await run_unlock(mock_config)
-        
+
         assert result is True
-        assert mock_client.request.call_count == 3
+        assert mock_client.request.call_count == 3  # noqa: PLR2004
 
 
 @pytest.mark.anyio
 async def test_integration_run_unlock_partial_failure(mock_config: Config) -> None:
-    """
-    Test that run_unlock returns False if ANY dataset check fails.
+    """Test that run_unlock returns False if ANY dataset check fails.
+
     This validates the 'Panic Mode' trigger logic.
-    
+
+
+
+
+
     Scenario:
+
+
     - tank/secure -> HTTP 500 Error (TrueNAS API glitch)
+
+
     - tank/media -> Unlocked
+
+
     """
     mock_response_error = MagicMock(spec=httpx.Response)
+
     mock_response_error.status_code = 500
+
     mock_response_error.text = "Internal Server Error"
 
     mock_response_unlocked = MagicMock(spec=httpx.Response)
+
     mock_response_unlocked.status_code = 200
+
     mock_response_unlocked.json.return_value = [{"locked": False}]
 
-    async def request_handler(method, url, **kwargs):
+    async def request_handler(method: str, url: str, **kwargs: object) -> MagicMock:  # noqa: ARG001
         if "tank/secure" in url:
             return mock_response_error
+
         if "tank/media" in url:
             return mock_response_unlocked
+
         return MagicMock(status_code=404)
 
     with patch("httpx.AsyncClient") as mock_client_cls:
@@ -101,16 +116,15 @@ async def test_integration_run_unlock_partial_failure(mock_config: Config) -> No
         mock_client.__aenter__.return_value = mock_client
 
         result = await run_unlock(mock_config)
-        
+
         # Should return False because one failed
         assert result is False
 
 
 @pytest.mark.anyio
 async def test_integration_run_unlock_connection_refused(mock_config: Config) -> None:
-    """
-    Test that run_unlock returns False when TrueNAS is offline.
-    
+    """Test that run_unlock returns False when TrueNAS is offline.
+
     Scenario:
     - ConnectionRefusedError on all requests
     """
@@ -121,5 +135,5 @@ async def test_integration_run_unlock_connection_refused(mock_config: Config) ->
         mock_client.__aenter__.return_value = mock_client
 
         result = await run_unlock(mock_config)
-        
+
         assert result is False

@@ -13,10 +13,10 @@ def mock_config() -> Config:
     """Return a mock configuration."""
     return Config(
         host="truenas.local",
-        api_key="secret-key",  # noqa: S106
+        api_key="secret-key",
         secrets=SecretsMode.INLINE,
         datasets=[
-            Dataset(path="tank/secure", secret="pass1"),  # noqa: S106
+            Dataset(path="tank/secure", secret="pass1"),
         ],
     )
 
@@ -36,10 +36,10 @@ async def test_client_context_manager(mock_config: Config) -> None:
     with patch("httpx.AsyncClient") as mock_client_cls:
         mock_instance = AsyncMock()
         mock_client_cls.return_value = mock_instance
-        
+
         async with TrueNasClient(mock_config) as client:
             assert client.client is mock_instance
-            
+
         mock_instance.aclose.assert_called_once()
 
 
@@ -51,11 +51,11 @@ async def test_request_success(mock_config: Config, mock_httpx_client: MagicMock
     mock_httpx_client.request.return_value = mock_response
 
     async with TrueNasClient(mock_config) as client:
-        client._client = mock_httpx_client  # Inject mock
-        response = await client._request("GET", "test")
-        
+        client._client = mock_httpx_client  # Inject mock  # noqa: SLF001
+        response = await client._request("GET", "test")  # noqa: SLF001
+
         assert response is mock_response
-        mock_httpx_client.request.assert_called_once()
+    mock_httpx_client.request.assert_called_once()
 
 
 @pytest.mark.anyio
@@ -68,16 +68,16 @@ async def test_request_failure(mock_config: Config, mock_httpx_client: MagicMock
     mock_httpx_client.request.return_value = mock_response
 
     async with TrueNasClient(mock_config) as client:
-        client._client = mock_httpx_client
-        response = await client._request("GET", "test")
+        client._client = mock_httpx_client  # noqa: SLF001
+        response = await client._request("GET", "test")  # noqa: SLF001
         assert response is None
 
     # Case 2: Exception
     mock_httpx_client.request.side_effect = httpx.RequestError("Connection failed")
-    
+
     async with TrueNasClient(mock_config) as client:
-        client._client = mock_httpx_client
-        response = await client._request("GET", "test")
+        client._client = mock_httpx_client  # noqa: SLF001
+        response = await client._request("GET", "test")  # noqa: SLF001
         assert response is None
 
 
@@ -87,9 +87,9 @@ async def test_is_locked(mock_config: Config, mock_httpx_client: MagicMock) -> N
     mock_response = MagicMock(spec=httpx.Response)
     mock_response.status_code = 200
     mock_httpx_client.request.return_value = mock_response
-    
+
     async with TrueNasClient(mock_config) as client:
-        client._client = mock_httpx_client
+        client._client = mock_httpx_client  # noqa: SLF001
         ds = mock_config.datasets[0]
 
         # Case 1: Locked
@@ -111,13 +111,13 @@ async def test_unlock(mock_config: Config, mock_httpx_client: MagicMock) -> None
     mock_response = MagicMock(spec=httpx.Response)
     mock_response.status_code = 200
     mock_httpx_client.request.return_value = mock_response
-    
+
     async with TrueNasClient(mock_config) as client:
-        client._client = mock_httpx_client
+        client._client = mock_httpx_client  # noqa: SLF001
         ds = mock_config.datasets[0]
 
         assert await client.unlock(ds) is True
-        
+
         mock_httpx_client.request.assert_called_with(
             "POST",
             "https://truenas.local/api/v2.0/pool/dataset/unlock",
@@ -141,13 +141,13 @@ async def test_lock(mock_config: Config, mock_httpx_client: MagicMock) -> None:
     mock_response = MagicMock(spec=httpx.Response)
     mock_response.status_code = 200
     mock_httpx_client.request.return_value = mock_response
-    
+
     async with TrueNasClient(mock_config) as client:
-        client._client = mock_httpx_client
+        client._client = mock_httpx_client  # noqa: SLF001
         ds = mock_config.datasets[0]
 
         assert await client.lock(ds, force=True) is True
-        
+
         mock_httpx_client.request.assert_called_with(
             "POST",
             "https://truenas.local/api/v2.0/pool/dataset/lock",
