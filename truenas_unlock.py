@@ -263,30 +263,74 @@ def find_config() -> Path | None:
     return None
 
 
-def run_unlock(config: Config, *, dry_run: bool = False, quiet: bool = False) -> None:
+def filter_datasets(datasets: list[Dataset], filters: list[str] | None) -> list[Dataset]:
+    """Filter datasets by path patterns."""
+    if not filters:
+        return datasets
+    return [ds for ds in datasets if any(f in ds.path for f in filters)]
+
+
+def run_unlock(
+    config: Config,
+    *,
+    dry_run: bool = False,
+    quiet: bool = False,
+    dataset_filters: list[str] | None = None,
+) -> None:
     """Run the unlock process once."""
+    datasets = filter_datasets(config.datasets, dataset_filters)
+
+    if not datasets:
+        err_console.print("[yellow]No matching datasets found.[/yellow]")
+        return
+
     if dry_run:
         console.print("[yellow]Dry run:[/yellow]")
-        for ds in config.datasets:
+        for ds in datasets:
             console.print(f"  • {ds.path}")
         return
 
     client = TrueNasClient(config)
-    for dataset in config.datasets:
+    for dataset in datasets:
         if client.is_locked(dataset, quiet=quiet):
             console.print(f"[yellow]⚡[/yellow] {dataset.path} locked, unlocking...")
             client.unlock(dataset)
 
 
-def run_lock(config: Config, *, force: bool = False) -> None:
+def run_lock(config: Config, *, force: bool = False, dataset_filters: list[str] | None = None) -> None:
     """Lock all configured datasets."""
+    datasets = filter_datasets(config.datasets, dataset_filters)
+
+    if not datasets:
+        err_console.print("[yellow]No matching datasets found.[/yellow]")
+        return
+
     client = TrueNasClient(config)
-    for dataset in config.datasets:
+    for dataset in datasets:
         locked = client.is_locked(dataset, quiet=True)
         if locked is False:
             client.lock(dataset, force=force)
         elif locked is True:
             console.print(f"[dim]Already locked: {dataset.path}[/dim]")
+
+
+def run_status(config: Config, *, dataset_filters: list[str] | None = None) -> None:
+    """Show lock status of all configured datasets."""
+    datasets = filter_datasets(config.datasets, dataset_filters)
+
+    if not datasets:
+        err_console.print("[yellow]No matching datasets found.[/yellow]")
+        return
+
+    client = TrueNasClient(config)
+    for dataset in datasets:
+        locked = client.is_locked(dataset, quiet=True)
+        if locked is True:
+            console.print(f"[yellow]🔒[/yellow] {dataset.path} [dim]locked[/dim]")
+        elif locked is False:
+            console.print(f"[green]🔓[/green] {dataset.path} [dim]unlocked[/dim]")
+        else:
+            console.print(f"[red]?[/red] {dataset.path} [dim]unknown[/dim]")
 
 
 app = typer.Typer(
@@ -482,8 +526,9 @@ def service_logs(
 def lock(
     config_path: Annotated[Path | None, typer.Option("--config", "-c", help="Config file path")] = None,
     force: Annotated[bool, typer.Option("--force", "-f", help="Force unmount before locking")] = False,
+    dataset: Annotated[list[str] | None, typer.Option("--dataset", "-D", help="Filter by dataset path")] = None,
 ) -> None:
-    """Lock all configured datasets."""
+    """Lock configured datasets."""
     if config_path is None:
         config_path = find_config()
 
@@ -493,7 +538,25 @@ def lock(
 
     config = Config.from_yaml(config_path)
     console.print(f"[dim]{config_path}[/dim]")
-    run_lock(config, force=force)
+    run_lock(config, force=force, dataset_filters=dataset)
+
+
+@app.command()
+def status(
+    config_path: Annotated[Path | None, typer.Option("--config", "-c", help="Config file path")] = None,
+    dataset: Annotated[list[str] | None, typer.Option("--dataset", "-D", help="Filter by dataset path")] = None,
+) -> None:
+    """Show lock status of configured datasets."""
+    if config_path is None:
+        config_path = find_config()
+
+    if config_path is None or not config_path.exists():
+        err_console.print("[red]Config not found.[/red]")
+        raise typer.Exit(1)
+
+    config = Config.from_yaml(config_path)
+    console.print(f"[dim]{config_path}[/dim]")
+    run_status(config, dataset_filters=dataset)
 
 
 @app.callback(invoke_without_command=True)
@@ -503,6 +566,7 @@ def main(
     dry_run: Annotated[bool, typer.Option("--dry-run", "-n", help="Show what would be done")] = False,
     daemon: Annotated[bool, typer.Option("--daemon", "-d", help="Run continuously")] = False,
     interval: Annotated[int, typer.Option("--interval", "-i", help="Seconds between runs")] = 10,
+    dataset: Annotated[list[str] | None, typer.Option("--dataset", "-D", help="Filter by dataset path")] = None,
 ) -> None:
     """Unlock encrypted ZFS datasets on TrueNAS."""
     # If a subcommand is invoked, don't run the main logic
@@ -525,13 +589,13 @@ def main(
         console.print(f"[bold]Running every {interval}s[/bold]")
         while True:
             try:
-                run_unlock(config, dry_run=dry_run, quiet=True)
+                run_unlock(config, dry_run=dry_run, quiet=True, dataset_filters=dataset)
                 time.sleep(interval)
             except KeyboardInterrupt:
                 console.print("\n[bold]Stopped[/bold]")
                 break
     else:
-        run_unlock(config, dry_run=dry_run)
+        run_unlock(config, dry_run=dry_run, dataset_filters=dataset)
 
 
 if __name__ == "__main__":
