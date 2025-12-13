@@ -317,9 +317,7 @@ async def run_unlock(
         await asyncio.gather(*[client.check_and_unlock(ds, quiet=quiet) for ds in datasets])
 
 
-async def run_lock(
-    config: Config, *, force: bool = False, dataset_filters: list[str] | None = None
-) -> None:
+async def run_lock(config: Config, *, force: bool = False, dataset_filters: list[str] | None = None) -> None:
     """Lock all configured datasets in parallel."""
     datasets = filter_datasets(config.datasets, dataset_filters)
 
