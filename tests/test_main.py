@@ -128,3 +128,87 @@ def test_cli_daemon_mode(tmp_path: object, mock_client_cls: object) -> None:  # 
         # Second sleep: failure -> 1s
         mock_sleep.assert_any_call(10)
         mock_sleep.assert_any_call(1)
+
+
+def test_cli_lock_command(tmp_path: object, mock_client_cls: object) -> None:  # noqa: ARG001
+    """Test CLI lock command."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("host: test\napi_key: key\ndatasets:\n  tank/ds: pass")
+
+    with patch("truenas_unlock.run_lock", new_callable=AsyncMock) as mock_run:
+        result = runner.invoke(app, ["lock", "--config", str(config_file)])
+        assert result.exit_code == 0
+        mock_run.assert_called_once()
+
+
+def test_cli_lock_command_with_force(tmp_path: object, mock_client_cls: object) -> None:  # noqa: ARG001
+    """Test CLI lock command with --force flag."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("host: test\napi_key: key\ndatasets:\n  tank/ds: pass")
+
+    with patch("truenas_unlock.run_lock", new_callable=AsyncMock) as mock_run:
+        result = runner.invoke(app, ["lock", "--config", str(config_file), "--force"])
+        assert result.exit_code == 0
+        mock_run.assert_called_once()
+        # Verify force=True was passed
+        call_kwargs = mock_run.call_args[1]
+        assert call_kwargs["force"] is True
+
+
+def test_cli_lock_missing_config() -> None:
+    """Test CLI lock fails without config."""
+    with patch("truenas_unlock.find_config", return_value=None):
+        result = runner.invoke(app, ["lock"])
+        assert result.exit_code == 1
+        assert "Config not found" in result.stderr
+
+
+def test_cli_status_command(tmp_path: object, mock_client_cls: object) -> None:  # noqa: ARG001
+    """Test CLI status command."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("host: test\napi_key: key\ndatasets:\n  tank/ds: pass")
+
+    with patch("truenas_unlock.run_status", new_callable=AsyncMock) as mock_run:
+        result = runner.invoke(app, ["status", "--config", str(config_file)])
+        assert result.exit_code == 0
+        mock_run.assert_called_once()
+
+
+def test_cli_status_missing_config() -> None:
+    """Test CLI status fails without config."""
+    with patch("truenas_unlock.find_config", return_value=None):
+        result = runner.invoke(app, ["status"])
+        assert result.exit_code == 1
+        assert "Config not found" in result.stderr
+
+
+def test_cli_lock_with_dataset_filter(tmp_path: object, mock_client_cls: object) -> None:  # noqa: ARG001
+    """Test CLI lock command with dataset filter."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("host: test\napi_key: key\ndatasets:\n  tank/ds: pass")
+
+    with patch("truenas_unlock.run_lock", new_callable=AsyncMock) as mock_run:
+        result = runner.invoke(
+            app,
+            ["lock", "--config", str(config_file), "--dataset", "tank/ds"],
+        )
+        assert result.exit_code == 0
+        mock_run.assert_called_once()
+        call_kwargs = mock_run.call_args[1]
+        assert call_kwargs["dataset_filters"] == ["tank/ds"]
+
+
+def test_cli_status_with_dataset_filter(tmp_path: object, mock_client_cls: object) -> None:  # noqa: ARG001
+    """Test CLI status command with dataset filter."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("host: test\napi_key: key\ndatasets:\n  tank/ds: pass")
+
+    with patch("truenas_unlock.run_status", new_callable=AsyncMock) as mock_run:
+        result = runner.invoke(
+            app,
+            ["status", "--config", str(config_file), "--dataset", "tank/ds"],
+        )
+        assert result.exit_code == 0
+        mock_run.assert_called_once()
+        call_kwargs = mock_run.call_args[1]
+        assert call_kwargs["dataset_filters"] == ["tank/ds"]
