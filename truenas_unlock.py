@@ -13,7 +13,7 @@ import subprocess
 import time
 from enum import Enum
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import httpx
 import typer
@@ -120,14 +120,14 @@ class Dataset(BaseModel):
     secret: str  # file path or literal passphrase
 
     @property
-    def pool(self) -> str:
+    def pool(self) -> str:  # noqa: D102
         return self.path.split("/")[0]
 
     @property
-    def name(self) -> str:
+    def name(self) -> str:  # noqa: D102
         return "/".join(self.path.split("/")[1:])
 
-    def get_passphrase(self, mode: SecretsMode) -> str:
+    def get_passphrase(self, mode: SecretsMode) -> str:  # noqa: D102
         return resolve_secret(self.secret, mode)
 
 
@@ -140,11 +140,11 @@ class Config(BaseModel):
     secrets: SecretsMode = SecretsMode.AUTO
     datasets: list[Dataset]
 
-    def get_api_key(self) -> str:
+    def get_api_key(self) -> str:  # noqa: D102
         return resolve_secret(self.api_key, self.secrets)
 
     @classmethod
-    def from_yaml(cls, path: Path) -> Config:
+    def from_yaml(cls, path: Path) -> Config:  # noqa: D102
         data = yaml.safe_load(path.read_text())
 
         # Handle legacy api_key_file field
@@ -161,23 +161,23 @@ class Config(BaseModel):
 class TrueNasClient:
     """Async client for TrueNAS API operations."""
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: Config) -> None:  # noqa: D107
         self.config = config
         self._client: httpx.AsyncClient | None = None
 
-    async def __aenter__(self) -> TrueNasClient:
+    async def __aenter__(self) -> TrueNasClient:  # noqa: D105, PYI034
         self._client = httpx.AsyncClient(
             timeout=httpx.Timeout(connect=2.0, read=10.0, write=10.0, pool=5.0),
             verify=not self.config.skip_cert_verify,
         )
         return self
 
-    async def __aexit__(self, *args: object) -> None:
+    async def __aexit__(self, *args: object) -> None:  # noqa: D105
         if self._client:
             await self._client.aclose()
 
     @property
-    def client(self) -> httpx.AsyncClient:
+    def client(self) -> httpx.AsyncClient:  # noqa: D102
         if self._client is None:
             msg = "Client not initialized. Use 'async with TrueNasClient(...):'"
             raise RuntimeError(msg)
@@ -192,13 +192,21 @@ class TrueNasClient:
         return f"https://{self.config.host}/api/v2.0"
 
     async def _request(
-        self, method: str, path: str, *, quiet: bool = False, **kwargs: object
+        self,
+        method: str,
+        path: str,
+        *,
+        quiet: bool = False,
+        **kwargs: Any,
     ) -> httpx.Response | None:
         try:
             response = await self.client.request(
-                method, f"{self._base_url}/{path}", headers=self._headers, **kwargs
+                method,
+                f"{self._base_url}/{path}",
+                headers=self._headers,
+                **kwargs,
             )
-            if response.status_code == 200:
+            if response.status_code == 200:  # noqa: PLR2004
                 return response
             if not quiet:
                 err_console.print(f"[red]API error {response.status_code}: {response.text}[/red]")
@@ -251,7 +259,7 @@ class TrueNasClient:
         """Check if locked and unlock if needed. Returns True if unlocked."""
         locked = await self.is_locked(dataset, quiet=quiet)
         if locked is None:
-            raise ConnectionError("Failed to check lock status")
+            raise ConnectionError("Failed to check lock status")  # noqa: TRY003, EM101
 
         if locked:
             console.print(f"[yellow]⚡[/yellow] {dataset.path} locked, unlocking...")
@@ -289,7 +297,7 @@ def filter_datasets(datasets: list[Dataset], filters: list[str] | None) -> list[
     return [ds for ds in datasets if any(f in ds.path for f in filters)]
 
 
-async def run_unlock(
+async def run_unlock(  # noqa: C901, PLR0911
     config: Config,
     *,
     dry_run: bool = False,
@@ -328,7 +336,7 @@ async def run_unlock(
 
     except (httpx.RequestError, ConnectionError):
         return False
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         if not quiet:
             err_console.print(f"[red]Unexpected error: {e}[/red]")
         return False
@@ -546,17 +554,27 @@ def service_logs(
             err_console.print("[yellow]No logs found. Is the service installed?[/yellow]")
             raise typer.Exit(1)
 
-        cmd = ["tail"]
+        tail_path = shutil.which("tail")
+        if not tail_path:
+            err_console.print("[red]Error: tail not found.[/red]")
+            raise typer.Exit(1)
+
+        cmd = [tail_path]
         if follow:
             cmd.append("-f")
         cmd.extend([str(out_log), str(err_log)])
-        os.execvp("tail", cmd)
+        os.execvp(tail_path, cmd)  # noqa: S606
 
     elif system == "Linux":
-        cmd = ["journalctl", "--user", "-u", "truenas-unlock"]
+        journalctl_path = shutil.which("journalctl")
+        if not journalctl_path:
+            err_console.print("[red]Error: journalctl not found.[/red]")
+            raise typer.Exit(1)
+
+        cmd = [journalctl_path, "--user", "-u", "truenas-unlock"]
         if follow:
             cmd.append("-f")
-        os.execvp("journalctl", cmd)
+        os.execvp(journalctl_path, cmd)  # noqa: S606
 
     else:
         err_console.print(f"[red]Unsupported OS: {system}[/red]")

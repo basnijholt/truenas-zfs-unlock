@@ -61,7 +61,16 @@ line-length = 120
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+select = ["ALL"]
+ignore = [
+    "T20",
+    "S101",
+    "S603",
+    "ANN401",
+    "PLR0913",
+    "FBT002",  # Boolean-typed keyword-only argument in function definition
+    "S106",    # Possible hardcoded password assigned to argument
+]
 
 [tool.mypy]
 python_version = "3.11"

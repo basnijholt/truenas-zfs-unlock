@@ -27,7 +27,7 @@ class TestResolveSecret:
 
         assert resolve_secret(str(secret_file), SecretsMode.FILES) == "file-content"
 
-    def test_files_mode_raises_on_missing(self, tmp_path: Path) -> None:
+    def test_files_mode_raises_on_missing(self) -> None:
         """Files mode raises error if file doesn't exist."""
         with pytest.raises(FileNotFoundError):
             resolve_secret("/nonexistent/path", SecretsMode.FILES)
@@ -95,7 +95,7 @@ class TestConfig:
             secrets: inline
             datasets:
               tank/photos: my-passphrase
-            """)
+            """),
         )
 
         config = Config.from_yaml(config_file)
@@ -122,7 +122,7 @@ class TestConfig:
             secrets: files
             datasets:
               tank/photos: {ds_key_file}
-            """)
+            """),
         )
 
         config = Config.from_yaml(config_file)
@@ -143,7 +143,7 @@ class TestConfig:
             api_key: {api_key_file}
             datasets:
               tank/photos: literal-passphrase
-            """)
+            """),
         )
 
         config = Config.from_yaml(config_file)
@@ -162,7 +162,7 @@ class TestConfig:
             secrets: inline
             datasets:
               tank/photos: passphrase
-            """)
+            """),
         )
 
         config = Config.from_yaml(config_file)

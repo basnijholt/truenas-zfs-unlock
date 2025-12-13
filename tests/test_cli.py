@@ -54,7 +54,7 @@ class TestFilterDatasets:
             Dataset(path="tank/frigate", secret="pass3"),
         ]
         result = filter_datasets(datasets, ["photos", "frigate"])
-        assert len(result) == 2
+        assert len(result) == 2  # noqa: PLR2004
         assert result[0].path == "tank/photos"
         assert result[1].path == "tank/frigate"
 
@@ -75,5 +75,5 @@ class TestFilterDatasets:
             Dataset(path="other/data", secret="pass3"),
         ]
         result = filter_datasets(datasets, ["tank/"])
-        assert len(result) == 2
+        assert len(result) == 2  # noqa: PLR2004
         assert all("tank/" in ds.path for ds in result)
