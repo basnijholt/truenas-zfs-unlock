@@ -98,10 +98,12 @@ truenas-unlock --help
 │ --dry-run   -n               Show what would be done                         │
 │ --daemon    -d               Run continuously                                │
 │ --interval  -i      INTEGER  Seconds between runs [default: 10]              │
+│ --dataset   -D      TEXT     Filter by dataset path                          │
 │ --help      -h               Show this message and exit.                     │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-│ lock      Lock all configured datasets.                                      │
+│ lock      Lock configured datasets.                                          │
+│ status    Show lock status of configured datasets.                           │
 │ service   Manage system service                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
