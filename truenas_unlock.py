@@ -21,6 +21,11 @@ import yaml
 from pydantic import BaseModel
 from rich.console import Console
 
+try:
+    from _version import __version__
+except ImportError:
+    __version__ = "unknown"
+
 console = Console()
 err_console = Console(stderr=True)
 
@@ -382,6 +387,12 @@ async def run_status(config: Config, *, dataset_filters: list[str] | None = None
         await asyncio.gather(*[check_status(client, ds) for ds in datasets])
 
 
+def _version_callback(value: bool) -> None:  # noqa: FBT001
+    if value:
+        console.print(f"truenas-unlock {__version__}")
+        raise typer.Exit
+
+
 app = typer.Typer(
     help="Unlock TrueNAS ZFS datasets",
     no_args_is_help=False,
@@ -626,6 +637,10 @@ def main(
     daemon: Annotated[bool, typer.Option("--daemon", "-d", help="Run continuously")] = False,
     interval: Annotated[int, typer.Option("--interval", "-i", help="Seconds between checks (1s if unreachable)")] = 30,
     dataset: Annotated[list[str] | None, typer.Option("--dataset", "-D", help="Filter by dataset path")] = None,
+    version: Annotated[  # noqa: ARG001
+        bool | None,
+        typer.Option("--version", "-v", help="Show version and exit", callback=_version_callback, is_eager=True),
+    ] = None,
 ) -> None:
     """Unlock encrypted ZFS datasets on TrueNAS."""
     # If a subcommand is invoked, don't run the main logic
