@@ -236,7 +236,7 @@ class TrueNasClient:
         url = f"{self._base_url}/pool/dataset/lock"
         payload = {
             "id": dataset.path,
-            "lock_options": {
+            "options": {
                 "force_umount": force,
             },
         }
