@@ -7,6 +7,8 @@
 
 Unlock encrypted ZFS datasets on TrueNAS via the API.
 
+https://github.com/user-attachments/assets/172c8fd7-5b66-4c5b-bae0-32e378e9305a
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
