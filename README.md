@@ -30,16 +30,51 @@ Think of it as a hardware security key for your storage—hidden somewhere in yo
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Install](#install)
-- [Setup](#setup)
-- [Usage](#usage)
-- [CLI](#cli)
-- [Running as a Service](#running-as-a-service)
-- [Development](#development)
-- [Credits](#credits)
-- [License](#license)
+- [TrueNAS Unlock](#truenas-unlock)
+  - [Why?](#why)
+  - [Table of Contents](#table-of-contents)
+  - [Docker](#docker)
+    - [Shell Aliases](#shell-aliases)
+      - [Zsh](#zsh)
+      - [Bash](#bash)
+  - [Install](#install)
+  - [Setup](#setup)
+  - [Usage](#usage)
+  - [CLI](#cli)
+  - [Running as a Service](#running-as-a-service)
+  - [Development](#development)
+  - [Credits](#credits)
+  - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Docker
+
+Append any args to the end of the following run command
+
+```shell
+docker run --rm -it -v ./config.yaml:/app/config.yaml ghcr.io/basnijholt/truenas-unlock -c ./config.yaml <args>
+```
+
+### Shell Aliases
+
+_Note: Use the full path to your config file_
+
+#### Zsh
+
+```shell
+echo 'alias truenas-unlock="docker run --rm -it -v ./config.yaml:/app/config.yaml ghcr.io/basnijholt/truenas-unlock -c ./config.yaml"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Bash
+
+_Note: Use the full path to your config file_
+
+```shell
+echo 'alias truenas-unlock="docker run --rm -it -v ./config.yaml:/app/config.yaml ghcr.io/basnijholt/truenas-unlock -c ./config.yaml"' >> ~/.bashrc
+source ~/.bashrc
+```
 
 ## Install
 
