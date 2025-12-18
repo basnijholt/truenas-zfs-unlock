@@ -295,12 +295,20 @@ def find_config() -> Path | None:
     return None
 
 
+def _display_path(path: Path) -> str:
+    """Format path for display, replacing home directory with ~."""
+    try:
+        return f"~/{path.relative_to(Path.home())}"
+    except ValueError:
+        return str(path)
+
+
 def print_config_not_found() -> None:
     """Print error message showing which config paths were searched."""
     err_console.print("[red]Config not found.[/red]")
     err_console.print("\nSearched paths:")
     for path in CONFIG_SEARCH_PATHS:
-        err_console.print(f"  • {path}")
+        err_console.print(f"  • {_display_path(path)}")
 
 
 def filter_datasets(datasets: list[Dataset], filters: list[str] | None) -> list[Dataset]:
